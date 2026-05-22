@@ -1,30 +1,89 @@
 ---
-name: greptile
+name: greploop
 description: >
-  Two-in-one PR review skill for GitHub, GitLab, and Perforce. Use check-pr mode to inspect a
-  PR/MR/CL for unresolved review comments, failing status checks, and incomplete descriptions —
-  then optionally fix and resolve them. Use greploop mode to iteratively trigger Greptile review,
-  fix all actionable comments, push/re-shelve, and repeat until Greptile gives a 5/5 confidence
-  score with zero unresolved comments. Trigger this skill whenever the user wants to check a PR,
-  address review feedback, prepare a change for submission, or run the Greptile review loop.
+  Iteratively improves a PR (GitHub), MR (GitLab), or shelved changelist (Perforce) until Greptile
+  gives it a 5/5 confidence score with zero unresolved comments. Triggers Greptile review, fixes
+  all actionable comments, pushes/re-shelves, re-triggers review, and repeats. Also includes
+  check-pr behavior for inspecting unresolved review comments, failing status checks, and incomplete
+  descriptions. Use when the user wants to fully optimize a PR/MR/CL against Greptile's code review
+  standards, check a PR, address review feedback, prepare a change for submission, or run the
+  Greptile review loop.
 license: MIT
 compatibility: Requires git and gh (GitHub CLI), glab (GitLab CLI), or p4 (Perforce CLI) installed and authenticated. greploop mode also requires Greptile installed on the repo.
 metadata:
   author: greptileai
-  version: "1.2-merged"
+  version: "1.2"
 allowed-tools: Bash(gh:*) Bash(glab:*) Bash(git:*) Bash(p4:*)
 ---
 
-# Greptile Skills
+# Greploop
 
-Two modes in one skill:
+Iteratively fix a PR/MR/CL until Greptile gives a perfect review: 5/5 confidence, zero unresolved comments.
+
+Two modes are supported:
 
 | Mode | Invoke as | What it does |
 |---|---|---|
-| **check-pr** | `/greptile check-pr [PR_NUMBER]` | Inspect PR/MR/CL for issues, optionally fix and resolve threads |
-| **greploop** | `/greptile greploop [PR_NUMBER]` | Loop: trigger Greptile review → fix → push → repeat until 5/5 |
+| **greploop** | `/greploop [PR_NUMBER]` | Loop: trigger Greptile review → fix → push → repeat until 5/5 |
+| **check-pr** | `/greploop check-pr [PR_NUMBER]` | Inspect PR/MR/CL for issues, optionally fix and resolve threads |
 
-If no mode is specified, infer from context: checking/inspecting → `check-pr`; iterating until perfect → `greploop`.
+If no mode is specified, default to `greploop` when the user asks for Greptile, 5/5, benchmark, full optimization, or "until fixed." Infer `check-pr` only for inspection-only requests.
+
+**Hard prerequisite:** greploop requires the external Greptile integration to be installed and responding on the repo. If no Greptile check, review, note, or score appears after triggering and polling, report:
+
+```
+Greploop blocked.
+  Platform:      GitHub
+  Iterations:    1
+  Confidence:    unavailable
+  Resolved:      0
+  Remaining:     unknown
+  Blocker:       Greptile integration did not create a check, review, comment, or score.
+```
+
+Do not invent a 5/5 score. Only report `5/5` when it is found in Greptile output.
+
+**PR engagement requirement:** never leave the PR with only `@greptile review`. Every greploop run must add a substantive PR comment or formal PR review that explains:
+
+- Which PR/MR/CL was checked
+- Which iteration is running
+- What was changed or verified
+- Whether Greptile produced a check, review, comments, or score
+- Current confidence score, or `unavailable` if Greptile did not produce one
+- Remaining actionable comments, or why none can be fetched
+- Next step or blocker
+
+Use this comment format after each iteration:
+
+```markdown
+## Greploop Iteration N
+
+Platform: GitHub
+PR: #123
+Head SHA: abc123
+
+### Actions
+- Pushed latest branch state.
+- Triggered Greptile with `@greptile review`.
+- Checked commit check-runs, PR reviews, PR body, and inline comments.
+
+### Greptile Result
+- Check run: found / not found
+- Bot review: found / not found
+- Confidence: 5/5 / 4/5 / unavailable
+- Unresolved Greptile comments: N / unavailable
+
+### Fixes Applied
+- ...
+
+### Status
+Complete / Continuing / Blocked
+
+### Blocker
+Only include if blocked. Example: Greptile integration did not create a check, review, comment, or score.
+```
+
+If the loop is blocked by a missing/non-responsive Greptile integration, post that result to the PR so the PR page is self-explanatory.
 
 ---
 
