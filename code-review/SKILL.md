@@ -43,6 +43,48 @@ Greploop blocked.
 
 Do not invent a 5/5 score. Only report `5/5` when it is found in Greptile output.
 
+**PR engagement requirement:** never leave the PR with only `@greptile review`. Every greploop run must add a substantive PR comment or formal PR review that explains:
+
+- Which PR/MR/CL was checked
+- Which iteration is running
+- What was changed or verified
+- Whether Greptile produced a check, review, comments, or score
+- Current confidence score, or `unavailable` if Greptile did not produce one
+- Remaining actionable comments, or why none can be fetched
+- Next step or blocker
+
+Use this comment format after each iteration:
+
+```markdown
+## Greploop Iteration N
+
+Platform: GitHub
+PR: #123
+Head SHA: abc123
+
+### Actions
+- Pushed latest branch state.
+- Triggered Greptile with `@greptile review`.
+- Checked commit check-runs, PR reviews, PR body, and inline comments.
+
+### Greptile Result
+- Check run: found / not found
+- Bot review: found / not found
+- Confidence: 5/5 / 4/5 / unavailable
+- Unresolved Greptile comments: N / unavailable
+
+### Fixes Applied
+- ...
+
+### Status
+Complete / Continuing / Blocked
+
+### Blocker
+Only include if blocked. Example: Greptile integration did not create a check, review, comment, or score.
+```
+
+If the loop is blocked by a missing/non-responsive Greptile integration, post that result to the PR so the PR page is self-explanatory.
+
 ---
 
 ## Shared: Detect Platform
